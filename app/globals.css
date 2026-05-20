@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@theme {
+  --color-velvet: #2A0004;
+  --color-velvet-dark: #110002;
+  --color-crimson: #5E0008;
+  --color-ruby: #9B111E;
+  --color-rosegold: #B76E79;
+  --color-platinum: #E5E4E2;
+  --color-champagne: #F7E7CE;
+  --color-pearl: #F8F8FF;
+  --color-void: #050001;
+  
+  --font-playfair: var(--font-playfair);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+@layer utilities {
+  .mask-radial-gradient {
+    mask-image: radial-gradient(circle at center, black 0%, transparent 100%);
+    -webkit-mask-image: -webkit-radial-gradient(center, exact center, black 0%, transparent 100%);
+  }
+
+  .glass-crimson-ultra {
+    background: rgba(17, 0, 2, 0.6);
+    backdrop-filter: blur(30px) saturate(200%);
+    -webkit-backdrop-filter: blur(30px) saturate(200%);
+    border-bottom: 1px solid rgba(183, 110, 121, 0.15);
+    box-shadow: inset 0 1px 0 rgba(229, 228, 226, 0.05), 0 20px 40px -10px rgba(5, 0, 1, 0.9);
+  }
+
+  .artifact-frame {
+    box-shadow: inset 0 0 0 1px rgba(229, 228, 226, 0.05), 0 0 100px rgba(27, 0, 2, 0.8);
+  }
+
+  .cinematic-vignette {
+    box-shadow: inset 0 0 25vw rgba(0, 0, 0, 0.98);
+    pointer-events: none;
+  }
+
+  .scanlines {
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.5) 50%, rgba(0, 0, 0, 0.5));
+    background-size: 100% 4px;
+    opacity: 0.3;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+  }
+
+  .scanlines-animated {
+    background: linear-gradient(to bottom, transparent 0%, rgba(183, 110, 121, 0.05) 50%, transparent 100%);
+    background-size: 100% 200%;
+    animation: scanline-sweep 10s linear infinite;
+    pointer-events: none;
+  }
+
+  .film-grain {
+    background-image: url('https://grainy-gradients.vercel.app/noise.svg');
+    opacity: 0.4;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    animation: grain-shift 3s steps(8) infinite;
+  }
+
+  @keyframes scanline-sweep {
+    0% { background-position: 0 -100vh; }
+    100% { background-position: 0 100vh; }
+  }
+
+  @keyframes grain-shift {
+    0%, 100% { transform: translate(0, 0); }
+    10% { transform: translate(-1%, -1%); }
+    30% { transform: translate(1%, -2%); }
+    50% { transform: translate(-2%, 1%); }
+    70% { transform: translate(2%, 2%); }
+    90% { transform: translate(-1%, -2%); }
+  }
+}
+
+body {
+  background-color: var(--color-void);
+  color: var(--color-platinum);
+  overscroll-behavior: none;
+}
+
+@media (pointer: fine) {
+  a, button, [role="button"] {
+    cursor: none !important;
+  }
+}

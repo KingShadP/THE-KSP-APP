@@ -1,0 +1,8 @@
+{
+  "name": "KINGSHADP Official",
+  "description": "KINGSHADP is a music artist persona and luxury creative universe built around power, identity, confidence, and self-mythology.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
