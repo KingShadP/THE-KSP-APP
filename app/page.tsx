@@ -1,72 +1,59 @@
 'use client';
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Loader } from '@/components/Loader';
+import { Navigation } from '@/components/Navigation';
+import { Hero } from '@/components/Hero';
+import { Mandate } from '@/components/Mandate';
+import { Reliquary } from '@/components/Reliquary';
+import { Chronicles } from '@/components/Chronicles';
+import { Footer } from '@/components/Footer';
+import { Cursor } from '@/components/Cursor';
 
-import { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, AnimatePresence } from 'motion/react';
-import { VaultAuthorization } from '@/components/VaultAuthorization';
-import { HeroMonolith } from '@/components/HeroMonolith';
-import { DualityManifesto } from '@/components/DualityManifesto';
-import { ArtifactReliquary } from '@/components/ArtifactReliquary';
-import { TelemetryOverlay } from '@/components/TelemetryOverlay';
-import { CustomCursor } from '@/components/CustomCursor';
-import { AtmosphereChamber } from '@/components/AtmosphereChamber';
-import { GlobalAudioControl } from '@/components/GlobalAudioControl';
-
-export default function EntryPortal() {
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"]
-  });
+export default function Page() {
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
-    if (!isAuthorized) {
-      document.body.style.overflow = 'hidden';
-      // Fallback scroll to top
-      window.scrollTo(0,0);
-    } else {
-      document.body.style.overflow = 'auto';
-    }
-  }, [isAuthorized]);
+    // Initial artificial vault unlock delay to set the tone
+    const timer = setTimeout(() => {
+      setIsUnlocked(true);
+      // Wait for the unlock animation before showing main scrollable content
+      setTimeout(() => setShowContent(true), 2000);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <div ref={containerRef} className="min-h-screen w-full bg-[#050505] text-[#E5E4E2] selection:bg-[#5E0008] selection:text-[#E5E4E2] font-sans relative">
-      <CustomCursor />
+    <main className="relative min-h-screen bg-[#050505] text-[#E5E4E2] selection:bg-[#5E0008] selection:text-[#E5E4E2] font-sans antialiased">
+      <Cursor />
       
-      {/* Abstract background elements */}
-      <AtmosphereChamber />
+      {/* Noise layer injected at the app root level for performance */}
+      <div 
+        className="fixed inset-0 pointer-events-none z-[9999] opacity-[0.035] mix-blend-screen"
+        style={{ backgroundImage: "url('https://grainy-gradients.vercel.app/noise.svg')", backgroundRepeat: 'repeat' }} 
+      />
 
       <AnimatePresence mode="wait">
-        {!isAuthorized ? (
-          <VaultAuthorization key="authorization" onComplete={() => setIsAuthorized(true)} />
-        ) : (
-          <motion.div 
-            key="interface"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 2, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <TelemetryOverlay scrollProgress={scrollYProgress} isAuthorized={isAuthorized} />
-            <GlobalAudioControl />
-
-            <main className="relative z-10 w-full overflow-hidden">
-              <HeroMonolith scrollProgress={scrollYProgress} />
-              <DualityManifesto scrollProgress={scrollYProgress} />
-              <ArtifactReliquary />
-              
-              <footer className="w-full py-40 flex flex-col items-center justify-center border-t border-[#E5E4E2]/5 bg-[#050505] relative z-30">
-                 <div className="font-serif italic text-3xl md:text-5xl text-[#E5E4E2]/20 mb-8">
-                   The Create
-                 </div>
-                 <div className="font-mono text-[9px] uppercase tracking-[0.4em] text-[#B76E79]">
-                   Initiate Contact
-                 </div>
-              </footer>
-            </main>
-          </motion.div>
+        {!isUnlocked && (
+          <Loader key="loader" />
         )}
       </AnimatePresence>
-    </div>
+
+      <div 
+        className="transition-opacity duration-1000"
+        style={{ opacity: showContent ? 1 : 0, pointerEvents: showContent ? 'auto' : 'none' }}
+      >
+         <Navigation />
+         
+         <div className="relative z-10">
+            <Hero />
+            <Mandate />
+            <Reliquary />
+            <Chronicles />
+            <Footer />
+         </div>
+      </div>
+    </main>
   );
 }
