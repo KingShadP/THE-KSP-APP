@@ -34,7 +34,7 @@ export function Editorial() {
                 The central duality is <span className="text-[#E5E4E2] font-medium">The Creator // The Create</span>. This space is not designed to distribute merchandise. It is constructed entirely to archive modern relics.
               </p>
               <p>
-                What exists here relies on high-end structural styling. We rely on the absolute authority of negative space. We strip away the loud, the desperate, and the generic. Everything that remains is intentional, commanding, and absolute. 
+                What exists here relies on high-end structural styling. We rely on the absolute authority of negative space. We strip away the loud, the desperate, and the generic. Everything that remains is deliberate, commanding, and absolute. 
               </p>
               
               <div className="pt-12 mt-4 border-t border-[#E5E4E2]/10 flex flex-col gap-6">

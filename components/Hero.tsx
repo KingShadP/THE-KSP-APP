@@ -28,7 +28,7 @@ export function Hero() {
         className="absolute inset-0 z-0 select-none pointer-events-none"
       >
         <Image
-          src="https://images.unsplash.com/photo-1590518335345-31295e8fb7a3?q=80&w=2500&auto=format&fit=crop"
+          src="/giragon2.png"
           alt="Monolith Texture"
           fill
           priority

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 
 export function Navigation() {
@@ -9,12 +9,138 @@ export function Navigation() {
   // A pseudo hash stream variable to make the interface feel active
   const [hashData, setHashData] = useState('00.00.00');
 
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const masterGainRef = useRef<GainNode | null>(null);
+  const oscsRef = useRef<OscillatorNode[]>([]);
+  const filterRef = useRef<BiquadFilterNode | null>(null);
+  const gainsRef = useRef<GainNode[]>([]);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     const interval = setInterval(() => {
       const code = Math.floor(Math.random() * 999999).toString().padStart(6, '0');
       setHashData(`${code.slice(0,2)}.${code.slice(2,4)}.${code.slice(4)}`);
     }, 1200);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (playing) {
+      try {
+        if (!audioContextRef.current) {
+          const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+          if (AudioContextClass) {
+            audioContextRef.current = new AudioContextClass();
+          }
+        }
+
+        const ctx = audioContextRef.current;
+        if (!ctx) return;
+
+        if (ctx.state === 'suspended') {
+          ctx.resume();
+        }
+
+        if (!masterGainRef.current) {
+          const mGain = ctx.createGain();
+          mGain.gain.setValueAtTime(0, ctx.currentTime);
+          mGain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 2.0);
+          mGain.connect(ctx.destination);
+          masterGainRef.current = mGain;
+
+          // 1. Deep sub bass drone (low oscillation at 55Hz matching low A tone)
+          const subOsc = ctx.createOscillator();
+          subOsc.type = 'triangle';
+          subOsc.frequency.setValueAtTime(55, ctx.currentTime);
+
+          const subFilter = ctx.createBiquadFilter();
+          subFilter.type = 'lowpass';
+          subFilter.frequency.setValueAtTime(110, ctx.currentTime);
+          filterRef.current = subFilter;
+
+          const subGain = ctx.createGain();
+          subGain.gain.setValueAtTime(0.35, ctx.currentTime);
+
+          subOsc.connect(subFilter);
+          subFilter.connect(subGain);
+          subGain.connect(mGain);
+          subOsc.start();
+          oscsRef.current.push(subOsc);
+
+          // 2. Cinematic atmospheric minor drone chord components
+          const frequencies = [82.4, 110, 130.8, 164.8];
+          frequencies.forEach((freq) => {
+            const osc = ctx.createOscillator();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, ctx.currentTime);
+
+            const chordGain = ctx.createGain();
+            chordGain.gain.setValueAtTime(0.05, ctx.currentTime);
+
+            osc.connect(chordGain);
+            chordGain.connect(mGain);
+            osc.start();
+            oscsRef.current.push(osc);
+            gainsRef.current.push(chordGain);
+          });
+
+          // 3. Natural evolution drift cycle
+          const modulate = () => {
+            if (!audioContextRef.current) return;
+            const now = audioContextRef.current.currentTime;
+            
+            gainsRef.current.forEach((g) => {
+              const targetVol = 0.02 + Math.random() * 0.06;
+              const duration = 4.0 + Math.random() * 4.0;
+              g.gain.setValueAtTime(g.gain.value, now);
+              g.gain.linearRampToValueAtTime(targetVol, now + duration);
+            });
+
+            if (filterRef.current) {
+              const targetFreq = 75 + Math.random() * 65;
+              filterRef.current.frequency.setValueAtTime(filterRef.current.frequency.value, now);
+              filterRef.current.frequency.linearRampToValueAtTime(targetFreq, now + 5.0);
+            }
+          };
+
+          modulate();
+          intervalRef.current = setInterval(modulate, 6000);
+        } else {
+          const now = ctx.currentTime;
+          masterGainRef.current.gain.setValueAtTime(masterGainRef.current.gain.value, now);
+          masterGainRef.current.gain.linearRampToValueAtTime(0.2, now + 1.5);
+        }
+      } catch (err) {
+        console.error("Failed to start sound synthesis", err);
+      }
+    } else {
+      if (audioContextRef.current && masterGainRef.current) {
+        const now = audioContextRef.current.currentTime;
+        masterGainRef.current.gain.setValueAtTime(masterGainRef.current.gain.value, now);
+        masterGainRef.current.gain.linearRampToValueAtTime(0.0, now + 1.5);
+      }
+    }
+  }, [playing]);
+
+  useEffect(() => {
+    const localOscs = oscsRef;
+    const localInterval = intervalRef;
+    const localCtx = audioContextRef;
+    return () => {
+      if (localInterval.current) {
+        clearInterval(localInterval.current);
+      }
+      localOscs.current.forEach((osc) => {
+        try {
+          osc.stop();
+        } catch (e) {}
+      });
+      if (localCtx.current) {
+        try {
+          localCtx.current.close();
+        } catch (e) {}
+      }
+    };
   }, []);
 
   return (

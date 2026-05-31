@@ -8,7 +8,7 @@ const ARCHIVE = [
     id: "V-01",
     title: "OBSIDIAN MANTLE",
     material: "HEAVYWEIGHT COTTON // SILK LINING",
-    img: "1590453535970-17e9bb763ee9"
+    img: "/spsh1.png"
   },
   {
     id: "V-02",
@@ -98,7 +98,7 @@ export function Collection() {
                   className="absolute inset-0 shadow-[0_20px_60px_rgba(0,0,0,0.8)]"
                 >
                     <Image
-                      src={`https://images.unsplash.com/photo-${ARCHIVE[hovered].img}?q=80&w=800&auto=format&fit=crop`}
+                      src={`https://picsum.photos/seed/${ARCHIVE[hovered].id}/800/800`}
                       alt={ARCHIVE[hovered].title}
                       fill
                       referrerPolicy="no-referrer"

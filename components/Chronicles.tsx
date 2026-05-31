@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'motion/react';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface ObscuraFact {
   index: string;
@@ -10,7 +10,7 @@ interface ObscuraFact {
   description: string;
 }
 
-const FACTS: ObscuraFact[] = [
+const STATIC_FACTS: ObscuraFact[] = [
   {
     index: "01 // CHRONICLE",
     category: "ARTIFACT FORGING",
@@ -74,6 +74,31 @@ const FACTS: ObscuraFact[] = [
 ];
 
 export function Chronicles() {
+  const [facts, setFacts] = useState<ObscuraFact[]>(STATIC_FACTS);
+  const [loadingIntel, setLoadingIntel] = useState(true);
+
+  useEffect(() => {
+    async function fetchLiveIntel() {
+      try {
+        const res = await fetch("/api/chronicles", { method: "POST" });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.text) {
+            const parsedFacts = JSON.parse(data.text);
+            if (Array.isArray(parsedFacts) && parsedFacts.length > 0) {
+              setFacts(prev => [...parsedFacts, ...prev]);
+            }
+          }
+        }
+      } catch (e) {
+        console.error("Failed to load live intel", e);
+      } finally {
+        setLoadingIntel(false);
+      }
+    }
+    fetchLiveIntel();
+  }, []);
+
   return (
     <section className="relative w-full bg-[#050505] py-24 md:py-48 z-20 overflow-hidden border-t border-[#E5E4E2]/5">
       {/* Editorial Grid Backing lines */}
@@ -106,7 +131,7 @@ export function Chronicles() {
 
         {/* Elegant Bento/Card Grid - No rounded corners, fine hairline borders, glow-on-hover */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 lg:gap-16">
-          {FACTS.map((fact, index) => (
+          {facts.map((fact, index) => (
             <motion.div
               key={fact.index}
               initial={{ opacity: 0, y: 40 }}
